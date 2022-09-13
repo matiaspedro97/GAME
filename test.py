@@ -86,8 +86,9 @@ class Fighter:
         self.screen = screen
         self.avail_keys = keys
         self.flag_up, self.jump_flag = 1, 0
-        self.ymax, self.ymin, self.xmin, self.xmax = screen.get_height() - 220, \
-                                                     screen.get_height(), 0, screen.get_width()
+        self.ymax, self.ymin, self.xmin, self.xmax = self.screen.get_height() - 220, \
+                                                     self.screen.get_height(), 0, \
+                                                     self.screen.get_width()
         self.c_ymax, self.c_ymin, self.c_xmin, self.c_xmax = self.ymax, self.ymin, \
                                                              self.xmin, self.xmax
         self.icon_h, self.icon_w = self.icon.get_height(), self.icon.get_width()
@@ -229,10 +230,10 @@ if __name__ == '__main__':
 
 
     def draw_bg(ended=False, slid_inc=0):
-        screen.blit(bg_img, (0, 0)) if not ended else draw_game_over(screen,
-                                                                     text=winner,
-                                                                     slid_inc=slid_inc)
-
+        if not ended:
+            screen.blit(bg_img, (0, 0)) 
+        else:
+            draw_game_over(screen, text=winner, slid_inc=slid_inc)
 
     def draw_game_over(screen, text, slid_inc):
         pygame.display.set_caption(text)
