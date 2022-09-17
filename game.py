@@ -34,7 +34,7 @@ class Game:
         print(K_a)
 
         # Background image
-        bg_img = pygame.image.load('img/bg1.gif')
+        bg_img = pygame.image.load('img/bg/bg1.gif')
 
         # Define constants for the screen width and height
         SCREEN_WIDTH = bg_img.get_width()

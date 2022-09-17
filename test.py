@@ -78,23 +78,24 @@ class Fighter:
         self.alive = True
         self.strength = strength
         self.side = 0
-        self.anim = [pygame.transform.scale(pygame.image.load(i), (30, 60)) for i in icon_path]
-        self.icon = self.anim[self.side]
+        self.anim = pygame.transform.scale(pygame.image.load(icon_path), (70, 100))
+        self.anim_list = [self.anim, pygame.transform.flip(self.anim, True, False)]
+        self.icon = self.anim_list[self.side]
         self.rect = self.icon.get_rect()
         self.rect.center = (x, y)
         self.player = player
         self.screen = screen
         self.avail_keys = keys
         self.flag_up, self.jump_flag = 1, 0
-        self.ymax, self.ymin, self.xmin, self.xmax = self.screen.get_height() - 220, \
-                                                     self.screen.get_height(), 0, \
+        self.ymax, self.ymin, self.xmin, self.xmax = self.screen.get_height() - 290, \
+                                                     self.screen.get_height() - 50, 0, \
                                                      self.screen.get_width()
         self.c_ymax, self.c_ymin, self.c_xmin, self.c_xmax = self.ymax, self.ymin, \
                                                              self.xmin, self.xmax
         self.icon_h, self.icon_w = self.icon.get_height(), self.icon.get_width()
 
     def draw(self):
-        self.icon = self.anim[self.side]
+        self.icon = self.anim_list[self.side]
         self.screen.blit(self.icon, self.rect)
         # print(self.hp)
         life_perc = self.hp / self.max_hp
@@ -117,41 +118,36 @@ class Fighter:
         elif key == self.avail_keys[2]:
             self.jump_flag = 1
             print('JUMP')
-        else:
-            pass
 
         if self.jump_flag == 0 and self.rect.bottom < self.c_ymin:
             print('rrrrrrrrrrrrrrrrrrrr')
             self.jump_flag, self.flag_up = 1, 0
-
         if self.jump_flag:
-            # Jump (0 - top; img_height - bottom)
             if self.flag_up:
-                self.rect.centery -= 1
+                self.rect.centery -= 2
                 self.flag_up = 0 if self.rect.top == self.c_ymax else 1
-                pygame.time.wait(5)
             else:
-                self.rect.centery += 1
+                self.rect.centery += 2
                 self.jump_flag, self.flag_up = (0, 1) if self.rect.bottom == self.c_ymin else (1, 0)
-                pygame.time.wait(5)
+
+            pygame.time.wait(3)
         # print(f'JUMP {self.jump_flag}')
         # print(f'UP {self.flag_up}')
 
     def smartphone_connect(self):
         self.c = Client(address=self.mac)
         self.c.connect()
-        while True:
-            con_flag = True if self.c.connected else False
-            data_flag = True if self.c.dataCurrent is not None else False
-            if con_flag * data_flag == 1:
-                break
+        con_flag = bool(self.c.connected)
+        data_flag = self.c.dataCurrent is not None
+        while con_flag * data_flag != 1:
+            pass
         print('Smartphone Connected')
 
     def smartphone_control(self):
         try:
             data_c = self.c.dataCurrent.Acceleration.Values.AsDouble
             magn = np.sqrt(np.sum(np.array(data_c) ** 2))
-        except:
+        except Exception:
             data_c, magn = 0, 0
 
         if time.time() - self.curr_time > self.wait_time:
@@ -191,25 +187,43 @@ class Fighter:
             self.hit(p_op=p_op)
 
 
-# GAME EXECUTION
-###################################################################################################
-if __name__ == '__main__':
-    # Initialize pygame
-    pygame.init()
+def draw_bg(screen, winner, bg_img, ended=False, slid_inc=0):
+    if not ended:
+        screen.blit(bg_img, (0, 0)) 
+    else:
+        draw_game_over(screen, text=winner, slid_inc=slid_inc)
 
-    pygame.mixer.music.load("soundtrack/04. Battle Theme 1.wav")
-    pygame.mixer.music.play(-1)
+
+def draw_game_over(screen, text, slid_inc):
+    pygame.display.set_caption(text)
+    font = pygame.font.SysFont("calibri", 30)
+    text_rend = font.render(text, False, (0, 255, 0), (255, 255, 255))
+    screen.fill((255, 255, 255))
+    screen.blit(text_rend, (0+slid_inc, 0+slid_inc))
+
+
+# RUNS THE GAME
+def run_game(p1_path: str, p2_path: str, track_path: str):
+    # Initialize pygame
+    #pygame.init()
 
     keys1 = [K_LEFT, K_RIGHT, K_UP, K_SPACE]
     keys2 = [K_a, K_d, K_w, K_r]
     print(K_a)
 
     # Background image
-    bg_img = pygame.image.load('img/bg1.gif')
+    bg_img = pygame.image.load('img/bg/grass_with_house.png')
 
     # Define constants for the screen width and height
     SCREEN_WIDTH = bg_img.get_width()
     SCREEN_HEIGHT = bg_img.get_height()
+
+    # Background soundtrack
+    try:
+        pygame.mixer.music.load(track_path)
+        pygame.mixer.music.play(-1)
+    except Exception:
+        pass
 
     # Create the screen object
     # The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
@@ -218,35 +232,22 @@ if __name__ == '__main__':
 
     # Player icon
     p1 = Fighter(20, bg_img.get_height() - 30, 100, 200,
-                 icon_path=["img/char1.png", "img/char1_rev.png"],
+                 icon_path=p1_path,
                  player=True, screen=screen, keys=keys1, mac=None)
     p2 = Fighter(bg_img.get_width() - 230, bg_img.get_height() - 30, 100, 200,
-                 icon_path=["img/char2_rev.png", "img/char2.png"],
+                 icon_path=p2_path,
                  player=True, screen=screen, keys=keys2, mac=None)
     RUN = True
 
     p1.smartphone_connect() if p1.mac is not None else None
     p2.smartphone_connect() if p2.mac is not None else None
 
-
-    def draw_bg(ended=False, slid_inc=0):
-        if not ended:
-            screen.blit(bg_img, (0, 0)) 
-        else:
-            draw_game_over(screen, text=winner, slid_inc=slid_inc)
-
-    def draw_game_over(screen, text, slid_inc):
-        pygame.display.set_caption(text)
-        font = pygame.font.SysFont("calibri", 30)
-        text_rend = font.render(text, False, (0, 255, 0), (255, 255, 255))
-        screen.fill((255, 255, 255))
-        screen.blit(text_rend, (0+slid_inc, 0+slid_inc))
-
+    winner = None
     slid_inc = 100
     end_flag = False
     while RUN:
         # Draw backgroundkeys1 = [K_LEFT, K_RIGHT, K_UP, K_SPACE]
-        draw_bg(end_flag, slid_inc)
+        draw_bg(screen=screen, winner=winner, bg_img=bg_img, ended=end_flag, slid_inc=slid_inc)
         for event in pygame.event.get():
             print(event)
 
@@ -257,6 +258,7 @@ if __name__ == '__main__':
                 p2.update_pos(key=event.key)
                 p1.attack(key=event.key, p_op=p2)
                 p2.attack(key=event.key, p_op=p1)
+            
 
         p1.update_pos(key=p1.smartphone_control()) if p1.c is not None else None
         p2.update_pos(key=p2.smartphone_control()) if p2.c is not None else None
@@ -273,3 +275,12 @@ if __name__ == '__main__':
             pygame.mixer.music.load("soundtrack/win_sound/win_sound.wav")
             pygame.mixer.music.play(1)
     pygame.quit()
+
+
+# GAME EXECUTION
+###################################################################################################
+if __name__ == '__main__':
+    p1_path = "img/char1.png"
+    p2_path = "img/char2_rev.png"
+
+    run_game(p1_path, p2_path)
