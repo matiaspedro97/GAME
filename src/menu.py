@@ -2,8 +2,8 @@ from hashlib import new
 import pygame
 import numpy as np
 import glob
-from constants import *
-from test import *
+from src.constants import *
+from src.test import run_game
 
 
 class Manager:
@@ -246,7 +246,7 @@ class MainMenu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     RUN = False
-                
+
                 if event.type == pygame.KEYDOWN:
                     curr_idx = self.change_track(key=event.key, curr_idx=curr_idx, 
                                                 tracks=track_names, rect=rect)
@@ -258,14 +258,14 @@ class MainMenu:
 
                     if event.key == pygame.K_ESCAPE:
                         RUN = False
-                    
+
                     if event.key == pygame.K_p:
-                        pygame.mixer.music.play(-1) if not pause_flag else pygame.mixer.pause()
+                        pygame.mixer.pause() if pause_flag else pygame.mixer.music.play(-1)
                         pause_flag = abs(pause_flag-1)
 
             # Update display
             pygame.display.update()
-        
+
         # Back to the main screen
         self.chosen_track = chosen_track
         self.reset_screen()

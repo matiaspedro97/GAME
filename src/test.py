@@ -3,7 +3,7 @@ import threading
 import pygame
 import numpy as np
 import os
-from SensorDroidNative import *
+from src.sensor_droid_native import *
 
 
 # Import pygame.locals for easier access to key coordinates

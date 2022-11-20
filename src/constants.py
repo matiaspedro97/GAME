@@ -1,5 +1,7 @@
 import os
 
+SRC_PATH = os.path.join(os.getcwd(), 'src')
+
 CHAR_PATH = os.path.join(os.getcwd(), 'img', 'char')
 
 BACKGND_PATH = os.path.join(os.getcwd(), 'img', 'bg')
