@@ -1,7 +1,13 @@
+import sys
+
+sys.path.extend('../src')
+
 from hashlib import new
 import pygame
 import numpy as np
 import glob
+
+
 from src.constants import *
 from src.test import run_game
 
@@ -19,8 +25,8 @@ class Manager:
         self.screen = screen
 
     @staticmethod
-    def draw_text(screen, txt, size, x, y, c: tuple = (0, 255, 0)):
-        font = pygame.font.SysFont(name='arial', size=size)
+    def draw_text(screen, txt, size, x, y, c: tuple = (0, 0, 0)):
+        font = pygame.font.SysFont(name='consolas', size=size)
         text_surface = font.render(txt, True, c)
         text_rect = text_surface.get_rect()
         text_rect.left = x
@@ -39,8 +45,8 @@ class MainMenu:
         self.cursor_str = None
 
         self.opt = {'MAIN': ['PLAY', 'CHOOSE CHARACTER', 'CHOOSE SOUNDTRACK', 'QUIT'], 
-                    'CHOOSE CHARACTER': ['-> NEXT', '<- PREVIOUS'],
-                    'CHOOSE SOUNDTRACK': ['-> NEXT', '<- PREVIOUS', 'P <- PLAY'],
+                    'CHOOSE CHARACTER': ['> NEXT', '< PREVIOUS'],
+                    'CHOOSE SOUNDTRACK': ['> NEXT', '< PREVIOUS', 'P < PLAY/PAUSE'],
                     'QUIT': ['YES', 'NO']}
 
         self.opt_map = {'PLAY': self.play_screen,
@@ -51,29 +57,33 @@ class MainMenu:
 
         self.char_path = glob.glob(os.path.join(CHAR_PATH, '*.*'))
         self.track_path = [None] + glob.glob(os.path.join(SOUNDTRACK_PATH, '*.*'))
+        self.menu_path = glob.glob(os.path.join(MENU_PATH, '*.*'))
 
         self.chosen_char = self.char_path[:2]
         self.chosen_track = self.track_path[0]
+        self.chosen_menu = self.menu_path[0]
+        print(self.chosen_menu)
 
         self.start_screen()
     
     def reset_screen(self):
+        self.menu_img = pygame.transform.scale(pygame.image.load(self.chosen_menu), (self.w, self.h))
         self.screen = pygame.display.set_mode((self.w, self.h))
+        self.screen.blit(self.menu_img, (0,0))
         self.cursor_rect = pygame.Rect([20, self.w-self.w//2, 30, 30])
 
     def start_screen(self):
         self.reset_screen()
 
         RUN = True
-        self.cursor_y = Manager.draw_text(screen=self.screen, txt='->', size=40, 
+        self.cursor_y = Manager.draw_text(screen=self.screen, txt='>', size=40, 
                                           x=self.cursor_rect.right - 30, y=self.cursor_rect.y)
         self.cursor_str = self.opt['MAIN'][0]
-
+        
         while RUN:
             opt_y = [Manager.draw_text(screen=self.screen, txt=opt, size=40, x=self.cursor_rect.right + 50, 
                                        y=self.cursor_rect.y + self.offset * idx) 
                      for idx, opt in enumerate(self.opt['MAIN'])]
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     RUN = False
@@ -96,7 +106,8 @@ class MainMenu:
         move = d.get(key)
 
         if move is not None:
-            self.screen = pygame.display.set_mode((self.w, self.h))
+            self.screen.blit(self.menu_img, (0,0))
+            #self.screen = pygame.display.set_mode((self.w, self.h))
             try:
                 cursor_idx = np.where(self.cursor_y == np.array(opt_y))[0][0]
                 new_idx = cursor_idx + move
@@ -111,9 +122,9 @@ class MainMenu:
             new_cursor_y = self.cursor_y
             new_cursor_str = self.cursor_str
 
-        self.cursor_y = Manager.draw_text(screen=self.screen, txt='->', size=40, 
-                                              x=self.cursor_rect.right-30,
-                                              y=new_cursor_y)
+        self.cursor_y = Manager.draw_text(screen=self.screen, txt='>', size=40, 
+                                          x=self.cursor_rect.right-30,
+                                          y=new_cursor_y)
         self.cursor_str = new_cursor_str
     
     def change_char(self, key, curr_idx: int, characters: list, rect: pygame.Rect):
@@ -122,7 +133,9 @@ class MainMenu:
         print(f"MOVE: {move}")
 
         if move is not None:
-            self.screen = pygame.display.set_mode((self.w, self.h))
+            self.screen.blit(self.menu_img, (0,0))
+
+            #self.screen = pygame.display.set_mode((self.w, self.h))
             try:
                 new_idx = curr_idx + move
                 new_idx = new_idx if (new_idx >= 0 and new_idx <= len(characters)-1) else curr_idx
@@ -143,7 +156,8 @@ class MainMenu:
         print(f"MOVE: {move}")
 
         if move is not None:
-            self.screen = pygame.display.set_mode((self.w, self.h))
+            self.screen.blit(self.menu_img, (0,0))
+            #self.screen = pygame.display.set_mode((self.w, self.h))
             try:
                 new_idx = curr_idx + move
                 new_idx = new_idx if (new_idx >= 0 and new_idx <= len(tracks)-1) else curr_idx
@@ -237,7 +251,7 @@ class MainMenu:
                                 txt='Choose the soundtrack', size=40, 
                                 x=self.cursor_rect.right + 50, 
                                 y=self.cursor_rect.y - self.offset, 
-                                c=(255, 0, 0)
+                                c=(0, 0, 0)
                                 )
             opt_y = [Manager.draw_text(screen=self.screen, txt=opt, size=40, x=self.cursor_rect.right + 50, 
                                         y=self.cursor_rect.y + self.offset*(idx)) 

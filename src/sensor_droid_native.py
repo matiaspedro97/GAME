@@ -26,7 +26,7 @@ def connectionUpdatedEventHandler(sender, msg):
 
 
 def sensorsReceivedEventHandler(sender, dataCurrent):
-    print(sender.name + ": Acceleration [" + dataCurrent.Acceleration.Values.AsString + "]")
+    print(f"{sender.name}: Acceleration [{dataCurrent.Acceleration.Values.AsString}]")
 
 
 def cameraReceivedEventHandler(sender, image):
