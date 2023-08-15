@@ -1,13 +1,15 @@
+import sys
+
+sys.path.extend('../src')
+
 import time
 import threading
 import pygame
 import numpy as np
 import os
-from src.sensor_droid_native import *
+from hashlib import new
+import glob
 
-
-# Import pygame.locals for easier access to key coordinates
-# Updated to conform to flake8 and black standards
 from pygame.constants import (
     K_LEFT,
     K_RIGHT,
@@ -17,6 +19,7 @@ from pygame.constants import (
     QUIT,
     K_SPACE,
     KEYUP,
+    KEYDOWN,
     K_DELETE,
     K_w,
     K_a,
@@ -130,7 +133,7 @@ class Fighter:
                 self.rect.centery += 2
                 self.jump_flag, self.flag_up = (0, 1) if self.rect.bottom == self.c_ymin else (1, 0)
 
-            pygame.time.wait(3)
+            pygame.time.wait(1)
         # print(f'JUMP {self.jump_flag}')
         # print(f'UP {self.flag_up}')
 
@@ -202,85 +205,5 @@ def draw_game_over(screen, text, slid_inc):
     screen.blit(text_rend, (0+slid_inc, 0+slid_inc))
 
 
-# RUNS THE GAME
-def run_game(p1_path: str, p2_path: str, track_path: str):
-    # Initialize pygame
-    #pygame.init()
-
-    keys1 = [K_LEFT, K_RIGHT, K_UP, K_SPACE]
-    keys2 = [K_a, K_d, K_w, K_r]
-    print(K_a)
-
-    # Background image
-    bg_img = pygame.image.load('img/bg/grass_with_house.png')
-
-    # Define constants for the screen width and height
-    SCREEN_WIDTH = bg_img.get_width()
-    SCREEN_HEIGHT = bg_img.get_height()
-
-    # Background soundtrack
-    try:
-        pygame.mixer.music.load(track_path)
-        pygame.mixer.music.play(-1)
-    except Exception:
-        pass
-
-    # Create the screen object
-    # The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Battle")
-
-    # Player icon
-    p1 = Fighter(20, bg_img.get_height() - 30, 100, 200,
-                 icon_path=p1_path,
-                 player=True, screen=screen, keys=keys1, mac=None)
-    p2 = Fighter(bg_img.get_width() - 230, bg_img.get_height() - 30, 100, 200,
-                 icon_path=p2_path,
-                 player=True, screen=screen, keys=keys2, mac=None)
-    RUN = True
-
-    p1.smartphone_connect() if p1.mac is not None else None
-    p2.smartphone_connect() if p2.mac is not None else None
-
-    winner = None
-    slid_inc = 100
-    end_flag = False
-    while RUN:
-        # Draw backgroundkeys1 = [K_LEFT, K_RIGHT, K_UP, K_SPACE]
-        draw_bg(screen=screen, winner=winner, bg_img=bg_img, ended=end_flag, slid_inc=slid_inc)
-        for event in pygame.event.get():
-            print(event)
-
-            if event.type == pygame.QUIT:
-                RUN = False
-            if event.type == KEYUP:
-                p1.update_pos(key=event.key)
-                p2.update_pos(key=event.key)
-                p1.attack(key=event.key, p_op=p2)
-                p2.attack(key=event.key, p_op=p1)
-            
-
-        p1.update_pos(key=p1.smartphone_control()) if p1.c is not None else None
-        p2.update_pos(key=p2.smartphone_control()) if p2.c is not None else None
-        p1.update_pos(key='')
-        p2.update_pos(key='')
-        change_constraints(p1, p2)
-        p1.draw()
-        p2.draw()
-        pygame.display.update()
-        if p1.hp * p2.hp <= 0 and not end_flag:
-            winner = "P1 player won the match" if np.greater(p1.hp, p2.hp) else \
-                "P2 player won the match"
-            end_flag = True
-            pygame.mixer.music.load("soundtrack/win_sound/win_sound.wav")
-            pygame.mixer.music.play(1)
-    pygame.quit()
 
 
-# GAME EXECUTION
-###################################################################################################
-if __name__ == '__main__':
-    p1_path = "img/char1.png"
-    p2_path = "img/char2_rev.png"
-
-    run_game(p1_path, p2_path)

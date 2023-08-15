@@ -47,7 +47,7 @@ pip install -r requirements/requirements-dev.txt
 - Activate the desired environment by doing:
 ```bash
 . .{your-env}/bin/activate  # Linux
-. .{your-env}/Scripts/Activate.ps1  # Windows
+.{your-env}/Scripts/Activate.ps1  # Windows
 ```
 
 
@@ -87,7 +87,6 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgements
 
 - [Pygame](https://www.pygame.org) - The library used for game development.
-- Any additional resources or references you used in the development of the game.
 
 ## Contact
 
