@@ -70,6 +70,11 @@ pyinstaller --onefile --paths=src/ src/runs/run_game.py
 4. Have fun :)
 
 
+## Demo
+Take a look at the battle game demo running from the terminal
+
+![OMD, that smile...](img/demo.gif)
+
 ## Contributions
 
 Contributions are welcome! If you want to contribute to the project, please follow these steps:
