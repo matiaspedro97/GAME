@@ -20,9 +20,6 @@ The Battle Game is a 2D game where players control characters and engage in batt
 - Press the **`R key`** (Player 1) or the **`spacebar`** (Player 2) to attack.
 - Follow the in-game instructions for additional controls or features.
 
-## Demonstration
-
-Include some screenshots or GIFs showcasing the gameplay or key features of your game.
 
 ## Installation
 
